@@ -1,3 +1,11 @@
+# app/main.py
+# -----------------------------
+# Purpose:
+#   The entry point for the FastAPI app.
+#   Provides endpoints: /health, /quote, /news
+#   Uses caching and async requests to manage API calls efficiently.
+
+
 #FastAPI Imports for web API
 from fastapi import FastAPI, HTTPException, Query
 #Allows API be called from web app on another port
@@ -43,11 +51,15 @@ def _clean_symbol(symbol: str) -> str:
     if not s:
         raise HTTPException(status_code=400, detail="Symbol required")
     return s
-#test enpoint
-@app.get("/health")
-async def health():
-    return {"ok": True, "ts": datetime.now(timezone.utc).isoformat()}
-#quotes enpoint 
+# #test enpoint
+# @app.get("/health")
+# async def health():
+#     return {"ok": True, "ts": datetime.now(timezone.utc).isoformat()}
+
+# -------------------------------------------------------------------------
+# /quote endpoint: get latest stock quote
+# -------------------------------------------------------------------------
+
 @app.get("/quote", response_model=Quote)
 async def quote(symbol: str = Query(..., description="Ticker e.g. AAPL")):
     symbol = _clean_symbol(symbol)
@@ -89,8 +101,10 @@ async def quote(symbol: str = Query(..., description="Ticker e.g. AAPL")):
         quotes_cache[symbol] = q
         return q
 
+# -------------------------------------------------------------------------
+# /news endpoint: get latest headlines for a stock
+# -------------------------------------------------------------------------
 
-#New endpoints
 @app.get("/news", response_model=NewsResponse)
 async def news(symbol: str, limit: int = Query(3, ge=1, le=10)):
     symbol = _clean_symbol(symbol)
@@ -123,6 +137,7 @@ async def news(symbol: str, limit: int = Query(3, ge=1, le=10)):
                       else datetime.fromisoformat(str(ts).replace("Z", "+00:00")))
             except Exception:
                 dt = datetime.now(timezone.utc)
+                
             #Build headline object
             items.append(Headline(
                 symbol=symbol,

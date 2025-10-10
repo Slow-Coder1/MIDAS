@@ -1,4 +1,7 @@
-#Handles all HTTP Communication wth Finnhub API
+# app/finnhub.py
+# -----------------------------
+# Purpose:
+#   Handles all communication with the Finnhub API (quotes and news).
 
 
 import httpx
@@ -8,15 +11,19 @@ from datetime import datetime, timedelta, timezone
 FINNHUB_BASE = "https://finnhub.io/api/v1"
 
 class FinnhubClient:
+
+    #A lightweight asynchronous client to interact with Finnhub endpoints
     def __init__(self, api_key: str, timeout: float = 10.0):
         self.api_key = api_key
         self._client = httpx.AsyncClient(timeout=timeout)
 
     async def close(self):
+        #Close HTTP connection cleanly
         await self._client.aclose()
 
     #fetch a stock quotes
     async def get_quote(self, symbol: str):
+        #Fetch current stock quote
         url = f"{FINNHUB_BASE}/quote"
         params = {"symbol": symbol, "token": self.api_key}
         #send GET request
